@@ -1,4 +1,4 @@
-%!TEX program = xelatex
+	%!TEX program = xelatex
 % 完整编译: xelatex -> bibtex -> xelatex -> xelatex
 \documentclass[lang=cn,10pt,a4paper,cite=authoryear]{elegantpaper}
 
@@ -28,10 +28,35 @@ $ f(x) = F^{'}(X \leq x)=\frac{e^{-(x-\mu)/\gamma}}{\gamma(1+e^{-(x-\mu)/\gamma}
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=\textwidth]{star.png}
-	\caption{一键三连求赞}
+	\includegraphics[width=0.3\textwidth]{lo_1.png}
+	\includegraphics[width=0.3\textwidth]{lo_2.png}
+	\caption{Logistic 分布}
 \end{figure}
+
+Logistic 分布是由其位置和尺度参数定义的连续分布。Logistic 分布的形状与正态分布的形状相似，但是 Logistic 分布的尾部更长，所以我们可以使用 Logistic 分布来建模比正态分布具有更长尾部和更高波峰的数据分布。在深度学习中常用到的 Sigmoid 函数就是 Logistic 的分布函数在  $\mu=0, \gamma=1$ 的特殊形式。
+
 \subsection{Logistic 回归}
+本次实验中考虑'0'，'1'的二分类问题，即一个伯努利分布
+
+$P(y=1|x;\theta)=h_{\theta}(x) $
+
+$P(y=0|x;\theta)=1-h_{\theta}(x)$
+
+可以将其合并为一个表达式：
+
+$P(y|x;\theta)=(h_{\theta}(x))^{y}(1-h_{\theta}(x))^{1-y}$
+
+logistic regression的目标函数是根据最大似然思想求得的。似然函数为：
+
+$L(\theta)=\prod_{i=1}^{n}(h_{\theta}(x^{i}))^{y^{i}}(1-h_{\theta}(x^{i}))^{1-y^{i}}$
+
+对$L(\theta)$求对数可以得到:
+
+$l(\theta)=-logL(\theta)=-\sum_{i=1}^{n}[{y^{i}}log(h_{\theta}(x^{i}))+(1-y^{i})log(1-h_{\theta}(x^{i}))]$
+
+使用$J(\theta)=\frac{1}{m}l(\theta)$作为logistic regression的损失函数
+
+
 
 \subsection{}
 
