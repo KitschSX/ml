@@ -3,6 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import gzip as gz
 
+x_dim = 28 * 28
+y_dim = 2
+W_dim = (y_dim, x_dim)
+b_dim = y_dim
+
+alpha = 1e-6
+batch_size = 85  # 5,17,85,745,12665
+epochs_num = 1
+
 
 def load_data(filename, kind):
     with gz.open(filename, 'rb') as fo:
@@ -19,22 +28,16 @@ def load_data(filename, kind):
     return data
 
 
-X_train = load_data('train-images-idx3-ubyte.gz', 'data')
-y_train = load_data('train-labels-idx1-ubyte.gz', 'lable')
-X_test = load_data('t10k-images-idx3-ubyte.gz', 'data')
-y_test = load_data('t10k-labels-idx1-ubyte.gz', 'lable')
-X_train = np.array(X_train[y_train <= 1, :])
-y_train = np.array(y_train[y_train <= 1])
-X_test = np.array(X_test[y_test <= 1, :])
-y_test = np.array(y_test[y_test <= 1])
-print('Train data shape:')
-print(X_train.shape, y_train.shape)
-print('Test data shape:')
-print(X_test.shape, y_test.shape)
-x_dim = 28 * 28
-y_dim = 2
-W_dim = (y_dim, x_dim)
-b_dim = y_dim
+def init_data():
+    X_train = load_data('train-images-idx3-ubyte.gz', 'data')
+    y_train = load_data('train-labels-idx1-ubyte.gz', 'lable')
+    X_test = load_data('t10k-images-idx3-ubyte.gz', 'data')
+    y_test = load_data('t10k-labels-idx1-ubyte.gz', 'lable')
+    X_train = np.array(X_train[y_train <= 1, :])
+    y_train = np.array(y_train[y_train <= 1])
+    X_test = np.array(X_test[y_test <= 1, :])
+    y_test = np.array(y_test[y_test <= 1])
+    return X_train, y_train, X_test, y_test
 
 
 def softmax(x):
@@ -71,10 +74,8 @@ def test_accurate(W, b, X_test, y_test):
     return accurate_rate
 
 
-def mini_batch(batch_size, alpha, epoches):
+def mini_batch(batch_size, alpha, epoches, X_train, y_train, X_test, y_test):
     accurate_rates = []
-    iters_W = []
-    iters_b = []
     W = np.zeros(W_dim)
     b = np.zeros(b_dim)
     x_batches = np.zeros(((int(X_train.shape[0] / batch_size), batch_size, 784)))
@@ -99,41 +100,22 @@ def mini_batch(batch_size, alpha, epoches):
             W -= alpha * W_gradients
             b -= alpha * b_gradients
             accurate_rates.append(test_accurate(W, b, X_test, y_test))
-            iters_W.append(W.copy())
-            iters_b.append(b.copy())
     end = time.time()
     time_cost = (end - start)
-    return W, b, time_cost, accurate_rates, iters_W, iters_b
+    return W, b, time_cost, accurate_rates
 
 
-def run(alpha, batch_size, epochs_num):
-    W, b, time_cost, accuracys, W_s, b_s = mini_batch(batch_size, alpha, epochs_num)
-    iterations = len(W_s)
-    dis_W = []
-    dis_b = []
-    for i in range(iterations):
-        dis_W.append(np.linalg.norm(W_s[i] - W))
-        dis_b.append(np.linalg.norm(b_s[i] - b))
-    print("the parameters is: step length alpah:{}; batch size:{}; Epoches:{}".format(alpha, batch_size, epochs_num))
+def run(alpha, batch_size, epochs_num, X_train, y_train, X_test, y_test):
+    W, b, time_cost, accuracys = mini_batch(batch_size, alpha, epochs_num, X_train, y_train, X_test, y_test)
     print("Result: accuracy:{:.2%},time cost:{:.2f}".format(accuracys[-1], time_cost))
-    plt.title('The Model accuracy variation chart ')
+    plt.title('Model accuracy')
     plt.xlabel('Iterations')
     plt.ylabel('Accuracy')
     plt.plot(accuracys, 'm')
     plt.grid()
     plt.show()
-    plt.title('The distance from the optimal solution')
-    plt.xlabel('Iterations')
-    plt.ylabel('Distance')
-    plt.plot(dis_W, 'r', label='distance between W and W*')
-    plt.plot(dis_b, 'g', label='distance between b and b*')
-    plt.legend()
-    plt.grid()
-    plt.show()
 
 
-alpha = 1e-6
-batch_size = 12665  # 5,17,85,745
-epochs_num = 1
-
-run(alpha, batch_size, epochs_num)
+if __name__ == '__main__':
+    X_train, y_train, X_test, y_test = init_data()
+    run(alpha, batch_size, epochs_num, X_train, y_train, X_test, y_test)
